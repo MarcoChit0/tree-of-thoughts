@@ -22,3 +22,5 @@ torch
 torchvision
 torchaudio
 accelerate
+google-genai
+tiktoken
