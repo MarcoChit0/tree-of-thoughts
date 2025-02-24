@@ -26,7 +26,7 @@ def run(args):
 
         # log
         infos = [task.test_output(i, y) for y in ys]
-        info.update({'idx': i, 'ys': ys, 'infos': infos, 'usage_so_far': model.get_usage(args.backend)})
+        info.update({'idx': i, 'ys': ys, 'infos': infos, 'usage_so_far': model.get_usage()})
         logs.append(info)
         with open(file, 'w') as f:
             json.dump(logs, f, indent=4)
