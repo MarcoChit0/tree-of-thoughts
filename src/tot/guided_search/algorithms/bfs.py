@@ -1,9 +1,9 @@
 import itertools
 import numpy as np
 from functools import partial
-from tot.models import Model
+from tot.models.models import Model
 
-def solve(model, args, task, idx, to_print=True):
+def bfs(model, args, task, idx, to_print=True):
     x = task.get_input(idx)  # input
     ys = ['']  # current output candidates
     infos = []

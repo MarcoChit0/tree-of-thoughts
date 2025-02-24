@@ -3,8 +3,8 @@ import json
 import argparse
 
 from tot.tasks import get_task
-from tot.methods.bfs import solve, naive_solve
-from tot.models import get_model, get_available_backends
+from tot.guided_search.algorithms.bfs import bfs as solve, naive_solve
+from tot.models.models import get_model, get_available_backends
 
 
 def run(args):
