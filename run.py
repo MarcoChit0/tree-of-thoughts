@@ -39,7 +39,7 @@ def run(args):
     
     n = args.task_end_index - args.task_start_index
     print(cnt_avg / n, cnt_any / n)
-    print('usage_so_far', model.get_usage(args.backend))
+    print('usage_so_far', model.get_usage())
 
 
 def parse_args():
