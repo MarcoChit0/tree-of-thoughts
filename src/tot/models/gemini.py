@@ -37,5 +37,5 @@ class GeminiModel(Model):
             "response_tokens": self.response_tokens,
             "total_tokens": self.prompt_tokens + self.response_tokens
         }
-    
-register_model(GeminiModel)
+
+register(GeminiModel, MODEL_REGISTRY)
