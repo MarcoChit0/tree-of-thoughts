@@ -3,7 +3,7 @@ import os
 import json
 from tot.tasks.task import Task, DATA_PATH
 from tot.prompts.crosswords import * 
-from tot.models.models import gpt
+from tot.models.model import gpt
 
 class MiniCrosswordsEnv:
     def __init__(self, file='mini0505.json'):

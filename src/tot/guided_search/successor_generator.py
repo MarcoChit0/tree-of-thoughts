@@ -1,69 +1,49 @@
 from tot.tasks.task import Task
-from tot.models.models import Model
-from tot.registry import register, SUCCESSOR_GENERATOR_REGISTRY, get_param
+from tot.models.model import Model
+from tot.registry import register, SUCCESSOR_GENERATOR_REGISTRY, RegistredClass
 
-class SuccessorGenerator:
-    def __init__(self, task: Task, model : Model, x: str):
+class SuccessorGenerator(RegistredClass):
+    def __init__(self, task: Task, model : Model):
         self.task = task
-        self.x = x
         self.model = model
-    
-    @classmethod
-    def from_config(cls, config:dict):
-        task = get_param(config, 'task')
-        model = get_param(config, 'model')
-        x = get_param(config, 'x')
-        return cls(task, model, x)
 
-    def generate_successors(self, y: str):
+    def __call__(self, x:str, ys: list[str]):
+        return [self.generate_successor(x, y) for y in ys]
+
+    def generate_successor(self, x:str, y:str):
         raise NotImplementedError
     
 class SampleSuccessorGenerator(SuccessorGenerator):
-    def __init__(self, task: Task, model: Model, x: str, number_of_samples: int):
-        super().__init__(task, model, x)
+    def __init__(self, task: Task, model: Model, number_of_samples: int):
+        super().__init__(task, model)
         self.number_of_samples = number_of_samples
 
-    def samples_wrapper(self, y: str):
+    def samples_wrapper(self, x:str, y: str):
         raise NotImplementedError
 
-    def generate_successors(self, y: str):
-        prompt = self.samples_wrapper(y)
-        samples = self.model.generate(prompt, n=self.number_of_samples)
+    def generate_successor(self, x:str, y:str):
+        prompt = self.samples_wrapper(x, y)
+        samples = self.model(prompt, n=self.number_of_samples)
         return [y + s for s in samples]
     
-    @classmethod
-    def from_config(cls, config:dict):
-        task = get_param(config, 'task')
-        model = get_param(config, 'model')
-        x = get_param(config, 'x')
-        number_of_samples = get_param(config, 'number_of_samples')
-        return cls(task, model, x, number_of_samples)
-    
 class StandardSampleSuccessorGenerator(SampleSuccessorGenerator):
-    def __init__(self, task: Task, model: Model, x: str, number_of_samples: int):
-        super().__init__(task, model, x, number_of_samples)
+    def samples_wrapper(self, x: str, y: str):
+        return self.task.standard_prompt_wrap(x, y)
 
-    def samples_wrapper(self, y: str):
-        return self.task.standard_prompt_wrap(self.x, y)
-
-register(StandardSampleSuccessorGenerator, SUCCESSOR_GENERATOR_REGISTRY)
+register(SUCCESSOR_GENERATOR_REGISTRY, StandardSampleSuccessorGenerator, 'standard-sample')
 
 class CotSampleSuccessorGenerator(SampleSuccessorGenerator):
-    def __init__(self, task: Task, model: Model, x: str, number_of_samples: int):
-        super().__init__(task, model, x, number_of_samples)
+    def samples_wrapper(self, x: str, y: str):
+        return self.task.cot_prompt_wrap(x, y)
 
-    def samples_wrapper(self, y: str):
-        return self.task.cot_prompt_wrap(self.x, y)
-
-register(CotSampleSuccessorGenerator, SUCCESSOR_GENERATOR_REGISTRY)
+register(SUCCESSOR_GENERATOR_REGISTRY, CotSampleSuccessorGenerator, 'cot-sample')
+    
 
 class ProposeSuccessorGenerator(SuccessorGenerator):
-    def __init__(self, task: Task, model: Model, x: str):
-        super().__init__(task, model, x)
-    
-    def generate_successors(self, y: str):
-        propose_prompt = self.task.propose_prompt_wrap(self.x, y)
-        proposals = self.model.generate(propose_prompt, n=1)[0].split('\n')
+    def generate_successor(self, x:str, y:str):
+        propose_prompt = self.task.propose_prompt_wrap(x, y)
+        proposals = self.model(propose_prompt, n=1)[0].split('\n')
         return [y + s + '\n' for s in proposals]
+    
 
-register(ProposeSuccessorGenerator, SUCCESSOR_GENERATOR_REGISTRY)
+register(SUCCESSOR_GENERATOR_REGISTRY, ProposeSuccessorGenerator, 'propose')
