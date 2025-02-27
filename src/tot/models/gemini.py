@@ -27,7 +27,7 @@ class GeminiModel(Model):
             contents=messages,
             config=types.GenerateContentConfig(
                 temperature=self.temperature,
-                candidate_count=3,
+                candidate_count=n,
                 max_output_tokens=max_tokens
             )
         )
