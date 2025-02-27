@@ -8,17 +8,15 @@ class HuggingFaceModel(Model):
         self.token = os.getenv("HUGGINGFACE_TOKEN")
         if self.token is None:
             raise ValueError("HUGGINGFACE_TOKEN environment variable not set")
+        self.tokenizer = AutoTokenizer.from_pretrained(f"{self.path}/{self.backend}", token=self.token)
+        self.model = AutoModelForCausalLM.from_pretrained(f"{self.path}/{self.backend}", token=self.token)
 
     def __call__(self, prompt, max_tokens=1000, n=1) -> list[str]:
         messages = [{"role": "user", "content": prompt}]
 
-        tokenizer = AutoTokenizer.from_pretrained(f"{self.path}/{self.backend}", token=self.token)
-        model = AutoModelForCausalLM.from_pretrained(f"{self.path}/{self.backend}", token=self.token)
-
-        generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
+        generator = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer)
 
         outputs = generator(messages, max_new_tokens=max_tokens, num_return_sequences=n, do_sample=True, temperature=self.temperature)
-
 
         cleaned_outputs = []
         for output in outputs:
@@ -29,7 +27,7 @@ class HuggingFaceModel(Model):
             for j in range(i, len(output["generated_text"])):
                 cleaned_outputs.append(output["generated_text"][j]['content'])
 
-        self.generated_tokens += sum(len(tokenizer.encode(output)) for output in cleaned_outputs)
+        self.generated_tokens += sum(len(self.tokenizer.encode(output)) for output in cleaned_outputs)
 
         return cleaned_outputs
 
@@ -41,7 +39,11 @@ class HuggingFaceModel(Model):
 class LlamaModel(HuggingFaceModel):
     def __init__(self, backend="llama-3.2-1B", temperature=0.7):
         super().__init__(backend, "meta-llama", temperature)
-    
+        self.model = AutoModelForCausalLM.from_pretrained(f"{self.path}/{self.backend}", token=self.token, torch_dtype=torch.float16)
+        self.tokenizer.add_special_tokens({'pad_token': '<pad>'})
+        self.model.resize_token_embeddings(len(self.tokenizer))
+        self.model.config.pad_token_id = self.tokenizer.pad_token_id
+
     @classmethod
     def get_available_backends(cls) -> list[str]:
         models_with_instruct = ["llama-3.2-1B", "llama-3.2-3B", "llama-3.1-8B", "llama-3.1-70B"]
