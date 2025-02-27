@@ -4,6 +4,8 @@ import argparse
 
 from tot.tasks import get_task
 from tot.models.hugging_face import *
+from tot.models.gemini import *
+from tot.models.gpt import *
 from tot.models.model import *
 from tot.registry import *
 from tot.guided_search import *

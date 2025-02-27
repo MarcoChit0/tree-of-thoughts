@@ -6,21 +6,19 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import tiktoken
 import torch
 
-MAX_NUMBER_CANDIATES_SAMPLED_SINGLE_STEP = 20
-
 class Model(RegistredClass):
     def __init__(self, backend=None, temperature=0.7):
         self.backend = backend
         self.temperature = temperature
 
-    def __call__(self, prompt, max_tokens=1000, n=1):
+    def __call__(self, prompt, max_tokens=1000, n=1) -> list[str]:
         raise NotImplementedError("generate method must be implemented in derived classes")
     
-    def get_usage(self):
+    def get_usage(self) -> dict:
         raise NotImplementedError("get_usage method must be implemented in derived classes")
 
     @classmethod
-    def get_available_backends(cls):
+    def get_available_backends(cls) -> list[str]:
         raise NotImplementedError("get_available_backends method must be implemented in derived classes")
 
 def add_instruct(models):
