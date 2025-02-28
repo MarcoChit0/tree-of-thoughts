@@ -14,6 +14,9 @@ class HuggingFaceModel(Model):
     def __call__(self, prompt, max_tokens=1000, n=1) -> list[str]:
         messages = [{"role": "user", "content": prompt}]
 
+        for m in messages:
+            print(f"Message:\n{m}\n")
+
         generator = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer)
 
         outputs = generator(messages, max_new_tokens=max_tokens, num_return_sequences=n, do_sample=True, temperature=self.temperature)
@@ -28,6 +31,9 @@ class HuggingFaceModel(Model):
                 cleaned_outputs.append(output["generated_text"][j]['content'])
 
         self.generated_tokens += sum(len(self.tokenizer.encode(output)) for output in cleaned_outputs)
+
+        for output in cleaned_outputs:
+            print(f"Output:\n{output}\n")
 
         return cleaned_outputs
 

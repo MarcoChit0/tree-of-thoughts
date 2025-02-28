@@ -50,6 +50,7 @@ class BFSSolver(Solver):
                 print(y)
             infos.append({'step': step, 'x': x, 'ys': ys, 'new_ys': new_ys, 'values': values, 'select_new_ys': select_new_ys})
             ys = select_new_ys
+            exit(1)
         return ys, {'steps': infos}
 
 class NaiveSolver(Solver):
